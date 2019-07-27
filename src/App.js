@@ -1,25 +1,124 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
 
-function App() {
+function ListItem(props) {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <div className="view">
+        <input className="toggle" type="checkbox"/>
+        <label>{props.text}</label>
+        <button className="destroy"/>
+      </div>
+  )
+}
+
+function List(props) {
+
+    const list = props.todoList.map(item => {
+        return(
+            <li key={item.id}>
+                <ListItem text={item.text}/>
+            </li>
+        )
+    });
+  return (
+      <section className="main">
+        <input id="toggle-all" className="toggle-all" type="checkbox"/>
+        <label htmlFor="toggle-all">Mark all as complete</label>
+        <ul className="todo-list">
+            {list}
+          {/*<li className="completed">*/}
+          {/*  <ListItem/>*/}
+          {/*</li>*/}
+          {/*<li>*/}
+          {/*  <div className="view">*/}
+          {/*    <input className="toggle" type="checkbox"/>*/}
+          {/*    <label>Buy a unicorn</label>*/}
+          {/*    <button className="destroy"/>*/}
+          {/*  </div>*/}
+          {/*</li>*/}
+        </ul>
+      </section>
+  )
+}
+
+function TodoListFooter() {
+  return (
+      <footer className="footer">
+        <span className="todo-count"><strong>0</strong> item left</span>
+        <ul className="filters">
+          <li>
+            <a className="selected" href="#/">All</a>
+          </li>
+          <li>
+            <a href="#/active">Active</a>
+          </li>
+          <li>
+            <a href="#/completed">Completed</a>
+          </li>
+        </ul>
+        <button className="clear-completed">Clear completed</button>
+      </footer>
+  )
+}
+
+function TodoList(props) {
+  return (
+      <div>
+        <List todoList={props.todoList}/>
+        <TodoListFooter />
+      </div>
+  )
+}
+
+function UserInput(props) {
+
+    const handleInputChange = (event) => {
+        props.onUserInputChange(event.target.value)
+    };
+
+    const handleInputKeyPress = (event) => {
+        console.log(event.charCode);
+        if(event.charCode === 13) {
+            props.onUserInputKeyEnterPress();
+        }
+    };
+
+  return (
+      <header className="header">
+        <h1>todos</h1>
+        <input value={props.userText}
+               onChange={handleInputChange}
+               onKeyPress={handleInputKeyPress}
+               className="new-todo"
+               placeholder="What needs to be done?"
+               autoFocus/>
       </header>
-    </div>
+  )
+}
+
+function App() {
+
+    const [todoList, setTodoList] = useState([]);
+    const [userText, setUserText] = useState('');
+
+    const handleUserInputKeyEnterPress = () => {
+        setTodoList([{
+            id: todoList.length + 1,
+            text: userText
+        }].concat(todoList));
+        setUserText('');
+    };
+
+    const handleUserInputChange = (text) => {
+        setUserText(text);
+    };
+  return (
+      <section className="todoapp">
+        <UserInput userText={userText}
+                   onUserInputChange={handleUserInputChange}
+                   onUserInputKeyEnterPress={handleUserInputKeyEnterPress}/>
+        <TodoList todoList={todoList}/>
+      </section>
   );
 }
 
