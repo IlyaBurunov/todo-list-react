@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import './App.css';
 
 function ListItem(props) {
+
   return (
       <div className="view">
-        <input className="toggle" type="checkbox"/>
+        <input onClick={props.onListItemInputClick(props.id)} className="toggle" type="checkbox"/>
         <label>{props.text}</label>
         <button className="destroy"/>
       </div>
@@ -16,7 +17,7 @@ function List(props) {
     const list = props.todoList.map(item => {
         return(
             <li key={item.id}>
-                <ListItem text={item.text}/>
+                <ListItem onListItemInputClick={props.onListItemCheckboxChanged} id={item.id} text={item.text}/>
             </li>
         )
     });
@@ -26,16 +27,6 @@ function List(props) {
         <label htmlFor="toggle-all">Mark all as complete</label>
         <ul className="todo-list">
             {list}
-          {/*<li className="completed">*/}
-          {/*  <ListItem/>*/}
-          {/*</li>*/}
-          {/*<li>*/}
-          {/*  <div className="view">*/}
-          {/*    <input className="toggle" type="checkbox"/>*/}
-          {/*    <label>Buy a unicorn</label>*/}
-          {/*    <button className="destroy"/>*/}
-          {/*  </div>*/}
-          {/*</li>*/}
         </ul>
       </section>
   )
@@ -64,7 +55,7 @@ function TodoListFooter() {
 function TodoList(props) {
   return (
       <div>
-        <List todoList={props.todoList}/>
+        <List onListItemCheckboxChanged={props.onListItemCheckboxChanged} todoList={props.todoList}/>
         <TodoListFooter />
       </div>
   )
@@ -77,7 +68,6 @@ function UserInput(props) {
     };
 
     const handleInputKeyPress = (event) => {
-        console.log(event.charCode);
         if(event.charCode === 13) {
             props.onUserInputKeyEnterPress();
         }
@@ -112,12 +102,17 @@ function App() {
     const handleUserInputChange = (text) => {
         setUserText(text);
     };
+
+
+    const handleListItemCheckboxChange = (id) => {
+        console.log(id);
+    };
   return (
       <section className="todoapp">
         <UserInput userText={userText}
                    onUserInputChange={handleUserInputChange}
                    onUserInputKeyEnterPress={handleUserInputKeyEnterPress}/>
-        <TodoList todoList={todoList}/>
+        <TodoList todoList={todoList} onListItemCheckboxChanged={handleListItemCheckboxChange}/>
       </section>
   );
 }
