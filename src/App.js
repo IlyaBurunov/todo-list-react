@@ -1,25 +1,51 @@
 import React, { useState } from 'react';
 import './App.css';
 
+const ListItemContext = React.createContext({
+    list: [],
+    setCompleted: () => {}
+});
+
 function ListItem(props) {
 
   return (
-      <div className="view">
-        <input onClick={props.onListItemInputClick(props.id)} className="toggle" type="checkbox"/>
-        <label>{props.text}</label>
-        <button className="destroy"/>
-      </div>
+      <ListItemContext.Consumer>
+          {({list, setCompleted}) => (
+          <div className="view">
+              <input onChange={() => setCompleted(props.id, props.completed)}
+                     className="toggle"
+                     type="checkbox"
+                     checked={props.completed}/>
+              <label>{props.text}</label>
+              <button className="destroy"/>
+          </div>
+          )}
+      </ListItemContext.Consumer>
   )
 }
 
 function List(props) {
 
+    console.log(props.completedTodo);
+
+    const todoIsCompleted = (id) => {
+        return !!props.completedTodo.find(todo => todo === id);
+    };
+
     const list = props.todoList.map(item => {
-        return(
-            <li key={item.id}>
-                <ListItem onListItemInputClick={props.onListItemCheckboxChanged} id={item.id} text={item.text}/>
-            </li>
-        )
+        if (todoIsCompleted(item.id)) {
+            return(
+                <li className="completed" key={item.id}>
+                    <ListItem id={item.id} text={item.text} completed={true}/>
+                </li>
+            )
+        } else {
+            return(
+                <li key={item.id}>
+                    <ListItem id={item.id} text={item.text} completed={false}/>
+                </li>
+            )
+        }
     });
   return (
       <section className="main">
@@ -55,7 +81,7 @@ function TodoListFooter() {
 function TodoList(props) {
   return (
       <div>
-        <List onListItemCheckboxChanged={props.onListItemCheckboxChanged} todoList={props.todoList}/>
+        <List completedTodo={props.completedTodo} todoList={props.todoList}/>
         <TodoListFooter />
       </div>
   )
@@ -90,6 +116,7 @@ function App() {
 
     const [todoList, setTodoList] = useState([]);
     const [userText, setUserText] = useState('');
+    const [completedTodo, setCompletedTodo] = useState([]);
 
     const handleUserInputKeyEnterPress = () => {
         setTodoList([{
@@ -104,16 +131,29 @@ function App() {
     };
 
 
-    const handleListItemCheckboxChange = (id) => {
+    const handleListItemCheckboxChange = (id, status) => {
         console.log(id);
+        console.log(!status);
+        if (!status) {
+            setCompletedTodo(completedTodo.concat([id]))
+        } else {
+            setCompletedTodo(completedTodo.filter(todo => todo !== id))
+        }
     };
   return (
-      <section className="todoapp">
-        <UserInput userText={userText}
-                   onUserInputChange={handleUserInputChange}
-                   onUserInputKeyEnterPress={handleUserInputKeyEnterPress}/>
-        <TodoList todoList={todoList} onListItemCheckboxChanged={handleListItemCheckboxChange}/>
-      </section>
+      <ListItemContext.Provider value={
+          {
+              list: todoList,
+              setCompleted: handleListItemCheckboxChange
+          }
+      }>
+          <section className="todoapp">
+              <UserInput userText={userText}
+                         onUserInputChange={handleUserInputChange}
+                         onUserInputKeyEnterPress={handleUserInputKeyEnterPress}/>
+              <TodoList todoList={todoList} completedTodo={completedTodo}/>
+          </section>
+      </ListItemContext.Provider>
   );
 }
 
