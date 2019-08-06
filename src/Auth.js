@@ -7,7 +7,9 @@ function Auth() {
     const [password, setPassword] = useState('');
 
     const singIn = () => {
-      return !username || !password ? '/' : '/todos'
+      return {
+          pathname: !username || !password ? '/' : '/todos',
+      }
     };
 
     return (

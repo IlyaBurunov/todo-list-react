@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {  Link  } from "react-router-dom";
 
 const ListItemContext = React.createContext({
     list: [],
@@ -6,6 +7,11 @@ const ListItemContext = React.createContext({
 });
 
 function ListItem(props) {
+
+    const routerData = {
+        pathname: `/todo/${props.id}`,
+        state: props
+    };
 
     return (
         <ListItemContext.Consumer>
@@ -15,7 +21,11 @@ function ListItem(props) {
                            className="toggle"
                            type="checkbox"
                            checked={props.completed}/>
-                    <label>{props.text}</label>
+                    <label>
+                        <Link to={routerData}>
+                            {props.text}
+                        </Link>
+                    </label>
                     <button className="destroy"/>
                 </div>
             )}
@@ -117,11 +127,13 @@ function Todos() {
     const [completedTodo, setCompletedTodo] = useState([]);
 
     const handleUserInputKeyEnterPress = () => {
-        setTodoList([{
-            id: todoList.length + 1,
-            text: userText
-        }].concat(todoList));
-        setUserText('');
+        if (userText) {
+            setTodoList([{
+                id: todoList.length + 1,
+                text: userText,
+            }].concat(todoList));
+            setUserText('');
+        }
     };
 
     const handleUserInputChange = (text) => {
