@@ -9,7 +9,7 @@ function Todo(props) {
             <div>
                 <p>Id: {todo.id}</p>
                 <p>Text: {todo.text}</p>
-                <p>Completed: {todo.completed + ''}</p>
+                <p>Completed: {todo.completed.toString()}</p>
             </div>
             <button>
                 <Link to={{pathname: '/todos'}}>Back</Link>

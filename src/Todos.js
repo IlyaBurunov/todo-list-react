@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {  Link  } from "react-router-dom";
 
 const ListItemContext = React.createContext({
@@ -121,7 +121,7 @@ function UserInput(props) {
     )
 }
 
-function Todos() {
+function Todos(props) {
     const [todoList, setTodoList] = useState([]);
     const [userText, setUserText] = useState('');
     const [completedTodo, setCompletedTodo] = useState([]);
@@ -133,12 +133,27 @@ function Todos() {
                 text: userText,
             }].concat(todoList));
             setUserText('');
+            setTodoTextInUrl('');
         }
+    };
+
+    const setTodoTextInUrl = (text) => {
+        const searchParams = new URLSearchParams();
+        searchParams.set('text', text);
+        props.history.push(`?${searchParams.toString()}`)
     };
 
     const handleUserInputChange = (text) => {
         setUserText(text);
+        setTodoTextInUrl(text);
     };
+
+    useEffect(() => {
+        const textFromUrl = new URLSearchParams(window.location.search).get('text');
+        if (textFromUrl !== null) {
+            setUserText(textFromUrl);
+        }
+    }, []);
 
 
     const handleListItemCheckboxChange = (id, status) => {
