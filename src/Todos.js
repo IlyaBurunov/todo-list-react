@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {  Link  } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const ListItemContext = React.createContext({
     list: [],
-    setCompleted: () => {}
+    setCompleted: () => { }
 });
 
 function ListItem(props) {
@@ -15,18 +15,18 @@ function ListItem(props) {
 
     return (
         <ListItemContext.Consumer>
-            {({list, setCompleted}) => (
+            {({ list, setCompleted }) => (
                 <div className="view">
                     <input onChange={() => setCompleted(props.id, props.completed)}
-                           className="toggle"
-                           type="checkbox"
-                           checked={props.completed}/>
+                        className="toggle"
+                        type="checkbox"
+                        checked={props.completed} />
                     <label>
                         <Link to={routerData}>
                             {props.text}
                         </Link>
                     </label>
-                    <button className="destroy"/>
+                    <button className="destroy" />
                 </div>
             )}
         </ListItemContext.Consumer>
@@ -35,30 +35,28 @@ function ListItem(props) {
 
 function List(props) {
 
-    console.log(props.completedTodo);
-
     const todoIsCompleted = (id) => {
         return !!props.completedTodo.find(todo => todo === id);
     };
 
     const list = props.todoList.map(item => {
         if (todoIsCompleted(item.id)) {
-            return(
+            return (
                 <li className="completed" key={item.id}>
-                    <ListItem id={item.id} text={item.text} completed={true}/>
+                    <ListItem id={item.id} text={item.text} completed={true} />
                 </li>
             )
         } else {
-            return(
+            return (
                 <li key={item.id}>
-                    <ListItem id={item.id} text={item.text} completed={false}/>
+                    <ListItem id={item.id} text={item.text} completed={false} />
                 </li>
             )
         }
     });
     return (
         <section className="main">
-            <input id="toggle-all" className="toggle-all" type="checkbox"/>
+            <input id="toggle-all" className="toggle-all" type="checkbox" />
             <label htmlFor="toggle-all">Mark all as complete</label>
             <ul className="todo-list">
                 {list}
@@ -90,7 +88,7 @@ function TodoListFooter() {
 function TodoList(props) {
     return (
         <div>
-            <List completedTodo={props.completedTodo} todoList={props.todoList}/>
+            <List completedTodo={props.completedTodo} todoList={props.todoList} />
             <TodoListFooter />
         </div>
     )
@@ -103,7 +101,7 @@ function UserInput(props) {
     };
 
     const handleInputKeyPress = (event) => {
-        if(event.charCode === 13) {
+        if (event.charCode === 13) {
             props.onUserInputKeyEnterPress();
         }
     };
@@ -112,27 +110,30 @@ function UserInput(props) {
         <header className="header">
             <h1>todos</h1>
             <input value={props.userText}
-                   onChange={handleInputChange}
-                   onKeyPress={handleInputKeyPress}
-                   className="new-todo"
-                   placeholder="What needs to be done?"
-                   autoFocus/>
+                onChange={handleInputChange}
+                onKeyPress={handleInputKeyPress}
+                className="new-todo"
+                placeholder="What needs to be done?"
+                autoFocus />
         </header>
     )
 }
 
 function Todos(props) {
+    const localStorageKey = 'todosData';
     const [todoList, setTodoList] = useState([]);
     const [userText, setUserText] = useState('');
     const [completedTodo, setCompletedTodo] = useState([]);
 
     const handleUserInputKeyEnterPress = () => {
         if (userText) {
-            setTodoList([{
+            const newTodoList = [{
                 id: todoList.length + 1,
                 text: userText,
-            }].concat(todoList));
+            }].concat(todoList);
+            setTodoList(newTodoList);
             setUserText('');
+            saveTodosData(newTodoList, null);
             setTodoTextInUrl('');
         }
     };
@@ -155,16 +156,31 @@ function Todos(props) {
         }
     }, []);
 
-
     const handleListItemCheckboxChange = (id, status) => {
-        console.log(id);
-        console.log(!status);
-        if (!status) {
-            setCompletedTodo(completedTodo.concat([id]))
-        } else {
-            setCompletedTodo(completedTodo.filter(todo => todo !== id))
-        }
+        const newCompletedTodo = !status ? completedTodo.concat([id])
+            : completedTodo.filter(todo => todo !== id);
+        setCompletedTodo(newCompletedTodo);
+        saveTodosData(null, newCompletedTodo);
     };
+
+    const saveTodosData = (newTodoList, newCompletedTodo) => {
+        const list = newTodoList ? newTodoList : todoList;
+        const completedList = newCompletedTodo ? newCompletedTodo : completedTodo;
+        localStorage.setItem(localStorageKey, JSON.stringify({
+            todoList: list,
+            completedTodo: completedList
+        }));
+    };
+
+    useEffect(() => {
+        const savedValueString = localStorage.getItem(localStorageKey);
+        const storageData = savedValueString && JSON.parse(savedValueString);
+        if (storageData) {
+            setTodoList(storageData.todoList);
+            setCompletedTodo(storageData.completedTodo)
+        }
+    }, []);
+
     return (
         <ListItemContext.Provider value={
             {
@@ -174,9 +190,9 @@ function Todos(props) {
         }>
             <section className="todoapp">
                 <UserInput userText={userText}
-                           onUserInputChange={handleUserInputChange}
-                           onUserInputKeyEnterPress={handleUserInputKeyEnterPress}/>
-                <TodoList todoList={todoList} completedTodo={completedTodo}/>
+                    onUserInputChange={handleUserInputChange}
+                    onUserInputKeyEnterPress={handleUserInputKeyEnterPress} />
+                <TodoList todoList={todoList} completedTodo={completedTodo} />
             </section>
         </ListItemContext.Provider>
     );
